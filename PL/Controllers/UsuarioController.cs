@@ -64,6 +64,8 @@ namespace PL.Controllers
             }
             catch (Exception ex)
             {
+                ViewBag.Message = "Error al mostrar los registros. " + ex.Message;
+                return PartialView("Modal");
             }
 
             return View(usuario);
@@ -118,7 +120,7 @@ namespace PL.Controllers
                 //GetById Sin ServiciosWeb
                 //ML.Result result = BL.Usuario.GetById(idUsuario.Value);
 
-                //GetById Con ServiciosWEb
+                //GetById Con ServiciosWeb
                 ML.Result result = new ML.Result();
                 result.Object = new object();
                 using (var client = new HttpClient())
@@ -290,12 +292,12 @@ namespace PL.Controllers
                     var result = postTask.Result;
                     if (result.IsSuccessStatusCode)
                     {
-                        ViewBag.Message = "Se ha registrado el usuario";
+                        ViewBag.Message = "Se ha actualizado el usuario.";
                         return PartialView("Modal");
                     }
                     else
                     {
-                        ViewBag.Message = "No se ha registrado el usuario";
+                        ViewBag.Message = "No se ha actualizado el usuario.";
                         return PartialView("Modal");
                     }
                 }
@@ -329,12 +331,12 @@ namespace PL.Controllers
                 var result = deleteTask.Result;
                 if (result.IsSuccessStatusCode)
                 {
-                    ViewBag.Message = "Se ha eliminado a el usuario";
+                    ViewBag.Message = "Se ha eliminado a el usuario.";
                     return PartialView("Modal");
                 }
                 else
                 {
-                    ViewBag.Message = "No se ha eliminado a el usuario";
+                    ViewBag.Message = "No se ha eliminado a el usuario.";
                     return PartialView("Modal");
                 }
             }
