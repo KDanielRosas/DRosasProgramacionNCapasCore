@@ -1,0 +1,207 @@
+﻿@model ML.Producto
+
+@{
+    ViewBag.Title = "Form";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h2><i class="fa-solid fa-cart-shopping fa-bounce" style="color:royalblue"></i> Producto</h2>
+            <p>Ingrese los datos del producto a registrar</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            @using (Html.BeginForm("Form", "Producto", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                <div class="form-horizontal">
+                    <div class="row">
+                        <div>
+                            @Html.LabelFor(model => model.IdProducto, new { @class = "visually-hidden" })
+                            @Html.TextBoxFor(model => model.IdProducto, new { @class = "visually-hidden" })
+                            @Html.ValidationMessageFor(model => model.IdProducto)
+                            @*hidden*@
+                        </div>
+
+                    </div><!-- row -->
+
+                    <br />
+
+                    <div class="row">
+                        
+                        <div class="col">
+                            @Html.LabelFor(model => model.Nombre)
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-quote-right"></i></span>
+                                @Html.TextBoxFor(model => model.Nombre, new { @class = "form-control", @id = "txtNombre" })
+                                @Html.ValidationMessageFor(model => model.Nombre)
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            @Html.LabelFor(model => model.PrecioUnitario)
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-dollar-sign"></i></span>
+                                @Html.TextBoxFor(model => model.PrecioUnitario, new { @class = "form-control", @id = "txtPrecioUnitario" })
+                                @Html.ValidationMessageFor(model => model.PrecioUnitario)
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            @Html.LabelFor(model => model.Stock)
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-box-open"></i></span>
+                                @Html.TextBoxFor(model => model.Stock, new { @class = "form-control", @id = "txtStock" })
+                                @Html.ValidationMessageFor(model => model.Stock)
+                            </div>
+                        </div>
+                                                
+                    </div><!-- row -->
+
+                    <br />
+
+                    <div class="row">                        
+
+                        <div class="col">
+                            @Html.LabelFor(model => model.Departamento.Area)
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-shop"></i></span>
+                                @Html.DropDownListFor(model => model.Departamento.Area.IdArea,
+                            new SelectList(Model.Departamento.Area.Areas, "IdArea", "Nombre"),
+                            "Selecciona un Area", new { @class = "form-control", @id = "ddlArea" })
+                            </div>
+                        </div>                        
+
+                        <div class="col">
+                            @Html.LabelFor(model => model.Departamento)
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-basket-shopping"></i></span>
+                                @Html.DropDownListFor(model => model.Departamento.IdDepartamento,
+                            new SelectList(Model.Departamento.Departamentos, "IdDepartamento", "Nombre"),
+                            "Selecciona un Departamento", new { @class = "form-control" , @id = "ddlDepartamento"})
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            @Html.LabelFor(model => model.Proveedor)
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-truck"></i></span>
+                                @Html.DropDownListFor(model => model.Proveedor.IdProveedor,
+                            new SelectList(Model.Proveedor.Proveedores, "IdProveedor", "Nombre"),
+                            "Selecciona un Proveedor", new { @class = "form-control" })
+                            </div>
+                        </div>
+
+                    </div><!-- row -->
+
+                    <br />
+
+                    <div class="row">                        
+
+                        <div class="col-8">
+                            @Html.LabelFor(model => model.Descripcion)
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-align-justify"></i></span>
+                                @Html.TextBoxFor(model => model.Descripcion, new { @class = "form-control", @id = "txtDescripcion" })
+                                @Html.ValidationMessageFor(model => model.Descripcion)
+                            </div>
+                        </div>                                              
+
+                    </div><!-- row -->
+
+                    <br />
+
+                    <div class="row">
+                        
+                        <div class="col-5">
+                            <div class="input-group-text mb-5">
+                                <span class="input-group-text" id="basic-text1"><i class="fa-solid fa-image"></i></span>
+                                <input id="fuImage" type='file' class="form-control" name="fuImage" onchange="validateFile(this), readURL(this);  " />
+                            </div>                            
+
+                            @if (Model.Imagen != null)
+                            {
+
+                                <img id="Img" src="data:image/*;base64,@Model.Imagen" style="width:150px ; height:150px" />
+
+                            }
+                            else
+                            {
+                                <img id="Img" src="~/Imagenes/ProductoDefault.jpg" style="width:150px ; height:150px" />
+                            }
+                        </div>
+                        @Html.HiddenFor(model => model.Imagen)
+                    </div>
+
+                    <br />
+
+                    <div class="row">
+                        <hr />
+                        <div class="col-md-3">                            
+                            <input type="submit" value="Guardar" class="btn btn-success" />
+                            @Html.ActionLink("Regresar", "GetAll", "Producto", htmlAttributes: new { @class = "btn btn-danger" })
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div><!--Container-->
+
+@section Scripts
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#ddlArea").change(function () {
+                $("#ddlDepartamento").empty();
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("DepartamentoGetByIdArea")',
+                    datatype: 'json',
+                    data: { idArea: $("#ddlArea").val() },
+                    success: function (departamentos) {
+                        $("#ddlDepartamento").append('<option value="0">' + 'Selecciona un Departamento' + '</option>');
+                        $.each(departamentos, function (i, departamentos) {
+                            $("#ddlDepartamento").append('<option value="'
+                                + departamentos.idDepartamento + '">'
+                                + departamentos.nombre + '</option>');
+                        });
+                    },
+                    error: function (ex) {
+                        alert('Failed: ' + ex);
+                    }
+                });//ajax
+            });//changeFunction
+        });//documentReady
+
+        function validateFile() {
+            var allowedExtension = ['jpeg', 'jpg', 'png'];
+            var fileExtension = document.getElementById('fuImage').value.split('.').pop().toLowerCase();
+            var isValidFile = false;
+            for (var index in allowedExtension) {
+                if (fileExtension === allowedExtension[index]) {
+                    isValidFile = true;
+                    break;
+                }
+            }
+            if (!isValidFile) {
+                alert('Las extensiones permitidas son : *.' + allowedExtension.join(', *.'));
+                document.getElementById('fuImage').value = ""
+            }
+            return isValidFile;
+        }//validateFile
+
+        function readURL(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#Img').attr('src', e.target.result);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }//readURL
+    </script>
+}

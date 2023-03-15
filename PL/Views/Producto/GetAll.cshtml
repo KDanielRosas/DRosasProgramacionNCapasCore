@@ -1,0 +1,129 @@
+﻿@model ML.Producto
+@{
+    ViewBag.Title = "GetAll";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <h2><i class="fa-solid fa-cart-shopping fa-bounce" style="color:royalblue"></i> Productos</h2>
+        <p>Presione el boton de "Agregar" si desea registrar un nuevo producto</p>
+        <hr />
+    </div> <!--row-->
+
+    <div class="row">
+        <div style="text-align:right">
+            @Html.ActionLink("Agregar Producto", "Form", "Producto", htmlAttributes: new { @class = "btn btn-success" })
+            <hr />
+        </div><!--style-->
+    </div><!--row-->
+
+    <div class="row" style="text-align:center">
+
+        <div class="col-1 col-md-12">
+
+            @if (Model.Productos != null)
+            {
+
+                <table class="table table-bordered table-responsive" id="tbProducto">
+                    <thead>
+                        <tr>
+                            <td class="text-center col-xs-1" style="font-weight:bold;">Editar</td>
+                            <td class="text-center col-xs-1" style="font-weight:bold;">Eliminar</td>
+
+                            <td class="visually-hidden">IdProducto</td>
+                            <td class="text-center" style="font-weight:bold;">Nombre</td>
+                            <td class="text-center" style="font-weight:bold;">Precio unitario</td>
+                            <td class="text-center" style="font-weight:bold;">Stock</td>
+                            <td class="visually-hidden">IdProveedor</td>
+                            <td class="text-center" style="font-weight:bold;">Proveedor</td>
+                            <td class="visually-hidden">IdDepartamento</td>
+                            <td class="text-center" style="font-weight:bold;">Departamento</td>
+                            <td class="text-center" style="font-weight:bold;">Descripcion</td>
+                            <td class="text-center" style="font-weight:bold;">Imagen</td>
+
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (ML.Producto producto in Model.Productos)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    <a class="btn btn-warning"
+                               href="@Url.Action("Form", "Producto",
+                                                            new { IdProducto = producto.IdProducto})"><i class="fa-regular fa-pen-to-square"></i></a>
+
+                                </td>
+                                <td class="text-center">
+                                    <a class="btn btn-danger"
+                               href="@Url.Action("Delete","Producto",
+                                                            new { IdProducto = producto.IdProducto })"><i class="fa-solid fa-trash"></i></a>
+                                </td>
+
+                                <td class="visually-hidden">@producto.IdProducto</td>
+                                <td class="col-sm-2">@producto.Nombre</td>
+                                <td class="col-xs-1">@producto.PrecioUnitario</td>
+                                <td class="col-xs-1">@producto.Stock</td>
+                                <td class="visually-hidden">@producto.Proveedor.IdProveedor</td>
+                                <td class="col-sm-1">@producto.Proveedor.Nombre</td>
+                                <td class="visually-hidden">@producto.Departamento.IdDepartamento</td>
+                                <td class="col-sm-1">@producto.Departamento.Nombre</td>
+                                <td class="col-sm-2">@producto.Descripcion</td>
+                                <td>
+                                    @if (producto.Imagen != null && producto.Imagen != "")
+                                    {
+
+                                        <img id="Img" src="data:image/*;base64,@producto.Imagen" style="width:150px ; height:150px" />
+
+                                    }
+                                    
+                                    @if (producto.Imagen.Equals("") || producto.Imagen == null)
+                                    {
+                                        <img id="Img" src="~/Imagenes/ProductoDefault.jpg" style="width:150px ; height:150px" />
+                                    }
+
+                                </td>
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            else
+            {
+                <div class="alert alert-danger" role="alert">Ocurrio un error!!</div>
+            }
+
+        </div>
+
+    </div>
+
+</div><!--container-->
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.1/js/dataTables.material.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#tbProducto').DataTable({
+                searching: false,
+                "lengthMenu": [[5, 10, 15, 20, -1], [5, 10, 15, 20, "Todos"]],
+                autoWidth: false,
+                columnDefs: [
+                    {
+                        targets: ['_all'],
+                        className: 'mdc-data-table__cell',
+                    },
+                ],
+                language: {
+                    url: "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Spanish.json",
+                },
+            });
+        });
+    </script>
+}

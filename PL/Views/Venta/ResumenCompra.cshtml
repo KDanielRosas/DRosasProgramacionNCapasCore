@@ -1,0 +1,126 @@
+﻿@model ML.VentaProducto
+@{
+    ViewData["Title"] = "Carrito";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h2><i class="fa-solid fa-cart-arrow-down" style="color:royalblue"></i> Carrito</h2>
+            <h4>Productos añadidos al carrito. Puede eliminar o agregar si lo desea.</h4>
+            <hr />
+        </div>
+    </div>
+
+    <div class="row">
+        <div style="text-align:right">
+            @Html.ActionLink("Añadir más productos al carrito", "ProductoGetAll", "Venta", htmlAttributes: new { @class = "btn btn-success" })
+            <hr />
+        </div><!--style-->
+    </div><!--row-->
+
+    <div class="row" style="text-align:center">
+
+        <div class="col-1 col-md-12">
+
+            @if (Model == null)
+            {
+                <div class="alert alert-danger" role="alert">No hay productos en el carrito.</div>
+            }
+            else
+            {
+                @if (Model.VentaProductos != null && Model.VentaProductos.Count > 0)
+                {
+
+                    <table class="table table-bordered table-responsive" id="tbProducto">
+                        <thead>
+                            <tr>
+                                <td class="visually-hidden">IdProducto</td>
+                                <td class="text-center" style="font-weight:bold;">Nombre</td>
+                                <td class="text-center" style="font-weight:bold;">Precio unitario</td>
+                                <td class="text-center" style="font-weight:bold;">Stock</td>
+                                <td class="text-center" style="font-weight:bold;">Descripcion</td>
+                                <td class="text-center" style="font-weight:bold;">Imagen</td>
+                                <td class="text-center" style="font-weight:bold;">Cantidad</td>
+                                <td class="text-center" style="font-weight:bold;">Subtotal</td>
+                                <td class="text-center" style="font-weight:bold;">Eliminar</td>
+
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (ML.Producto producto in Model.VentaProductos)
+                            {
+                                <tr>
+                                    <td class="visually-hidden">@producto.IdProducto</td>
+                                    <td class="col-sm-2">@producto.Nombre</td>
+                                    <td class="col-sm-1">$ @producto.PrecioUnitario</td>
+                                    <td class="col-sm-1">@producto.Stock</td>
+                                    <td class="col-sm-3">@producto.Descripcion</td>
+                                    <td class="col-sm-2">
+                                        @if (producto.Imagen != null && producto.Imagen != "")
+                                        {
+
+                                            <img id="Img" src="data:image/*;base64,@producto.Imagen" style="width:150px ; height:150px" />
+
+                                        }
+
+                                        @if (producto.Imagen.Equals("") || producto.Imagen == null)
+                                        {
+                                            <img id="Img" src="~/Imagenes/ProductoDefault.jpg" style="width:150px ; height:150px" />
+                                        }
+
+                                    </td>
+
+                                    <td class="col-sm-2">
+                                        @if (producto.Cantidad > 1)
+                                        {
+                                            @*<button class="btn btn-danger"><i class="fa-solid fa-minus"></i></button>*@
+                                            <a class="btn btn-danger" href="@Url.Action("RestarCantidad","Venta",
+                                        new { idProducto = producto.IdProducto})"><i class="fa-solid fa-minus"></i></a>
+                                        }
+                                        else
+                                        {
+                                            <a class="btn btn-danger" href="@Url.Action("Eliminar","Venta",
+                                        new { idProducto = producto.IdProducto})"><i class="fa-solid fa-minus"></i></a>
+                                        }
+                                        @producto.Cantidad
+
+                                        @if (producto.Cantidad == producto.Stock)
+                                        {
+                                            <a class="btn btn-success" href="@Url.Action("SumarCantidad","Venta",
+                                        new { idProducto = producto.IdProducto})" onclick="return confirm('Ya no existe mas Stock de este producto');"><i class="fa-solid fa-plus"></i></a>
+                                        }
+                                        else
+                                        {
+                                            <a class="btn btn-success" href="@Url.Action("SumarCantidad","Venta",
+                                        new { idProducto = producto.IdProducto})"><i class="fa-solid fa-plus"></i></a>
+                                        }
+
+                                    </td>
+
+                                    <td class="col-sm-2">$ @producto.PrecioUnitario</td>
+
+                                    <td class="text-center">
+                                        <a class="btn btn-danger"
+                               href="@Url.Action("Eliminar","Venta",
+                                            new { idProducto = producto.IdProducto })"><i class="fa-solid fa-trash"></i></a>
+                                    </td>
+
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+                else
+                {
+                    <div class="alert alert-danger" role="alert">No hay productos en el carrito.</div>
+                }
+            }            
+
+        </div>
+
+    </div>
+
+</div> <!-- container -->

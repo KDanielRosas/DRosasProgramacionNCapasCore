@@ -1,0 +1,165 @@
+﻿@model ML.Producto
+@{
+    ViewData["Title"] = "ProductoGetAll";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h2><i class="fa-solid fa-cart-shopping fa-bounce" style="color:royalblue"></i> Venta</h2>
+            <hr />            
+        </div>        
+    </div>
+    <h4 style="font-size:medium">Puede seleccionar el area y departamento para una búsqueda especifica o solo buscar por nombre del producto.</h4>
+    <div class="row">
+        <div class="col-md-12">
+            @using (Html.BeginForm("ProductoGetAll", "Venta", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                <div class="form-horizontal">
+                    <div class="row">
+
+                        <div class="col-md-3">
+
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-quote-right"></i></span>
+                                @Html.TextBoxFor(model => model.Nombre, new { @class = "form-control", @id = "txtNombre", @placeholder = "Nombre" })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.Nombre)
+                        </div>
+
+                        <div class="col-md-4">                            
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-shop"></i></span>
+                                @Html.DropDownListFor(model => model.Departamento.Area.IdArea,
+                            new SelectList(Model.Departamento.Area.Areas, "IdArea", "Nombre"),
+                            "Selecciona un Area", new { @class = "form-control", @id = "ddlArea" })
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-basket-shopping"></i></span>
+                                @Html.DropDownListFor(model => model.Departamento.IdDepartamento,
+                            new SelectList(Model.Departamento.Departamentos, "IdDepartamento", "Nombre"),
+                            "Selecciona un Departamento", new { @class = "form-control" , @id = "ddlDepartamento"})
+                            </div>
+                        </div>
+
+                    </div> <!-- row -->
+                </div> <!-- formHorizontal -->
+                <br />
+                <div class="row col-sm-2">
+                    <input type="submit" value="Buscar" class="btn btn-info" />
+                </div>
+            }
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="row" style="text-align:center">
+
+        <div class="col-1 col-md-12">
+
+            @if (Model.Productos != null)
+            {
+                <div class="row row-cols-3">
+
+                    @foreach (ML.Producto producto in Model.Productos)
+                    {
+                        <div class="col">
+                            <div class="card border-secondary mb-3" style="height: 24rem; width: 16rem;">
+                                <img src="data:image/*;base64,@producto.Imagen" class="card-img-top" style="height: 12rem; width:12rem; margin:auto" id="pImagen">
+                                <div class="card-body">                                    
+                                    <p class="card-text" style="display:none" id="pIdProveedor">@producto.Proveedor.IdProveedor</p>
+                                    <p class="card-text" style="display:none" id="pIdDepartamento">@producto.Departamento.IdDepartamento</p>
+                                    <h5 class="card-title" id="pNombre">@producto.Nombre</h5>
+                                    <p class="card-text" id="pDescripcion">@producto.Descripcion</p>
+                                    <p class="card-text" id="pPrecioUnitario">$@producto.PrecioUnitario mxn</p>                                    
+                                    @*<a class="btn btn-primary" href="@Url.Action("ResumenCompra", "Venta",
+                                    new { idProducto = producto.IdProducto})" >Agregar al carrito</a>*@
+                                    <a href="@Url.Action("CartPost","Venta", new { idProducto = producto.IdProducto })" class="btn btn-success">
+                                Añadir</a>
+                                   @*<button class="btn btn-success" onclick="CrearObjeto()" >Añadir <i class="bi bi-cart3" style="color: khaki"></i></button>*@
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger" role="alert">Ocurrio un error!!</div>
+            }
+
+        </div>
+
+    </div> <!-- row -->
+
+</div> <!-- container -->
+
+@section Scripts
+    {
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#ddlArea").change(function () {
+                $("#ddlDepartamento").empty();
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("DepartamentoGetByIdArea")',
+                    datatype: 'json',
+                    data: { idArea: $("#ddlArea").val() },
+                    success: function (departamentos) {
+                        $("#ddlDepartamento").append('<option value="0">' + 'Selecciona un Departamento' + '</option>');
+                        $.each(departamentos, function (i, departamentos) {
+                            $("#ddlDepartamento").append('<option value="'
+                                + departamentos.idDepartamento + '">'
+                                + departamentos.nombre + '</option>');
+                        });
+                    },
+                    error: function (ex) {
+                        alert('Failed: ' + ex);
+                    }
+                });//ajax
+            });//changeFunction            
+        });//documentReady
+
+        function CrearObjeto() {  
+            var id = $("#pIdProducto").val()
+            var producto = {
+                IdProducto: id,
+                Nombre: $('#pNombre').val(),
+                PrecioUnitario: $('#pPrecioUnitario').val(),
+                Stock: $('#pStock').val(),
+                Proveedor: {
+                    IdProveedor: $('#pIdProveedor').val(),
+                },
+                Departamento: {
+                    IdDepartamento: $('#pIdDepartamento').val(),
+                },
+                Descripcion: $('#pDescripcion').val(),
+                Imagen: $('#pImagen').val()
+            }
+            Add(producto)
+        }
+
+        function Add(producto) {
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("CartPost")',
+                dataType: 'json',
+                data: JSON.stringify(producto),
+                contentType: 'application/json; charset=utf-8',
+                success: function (result) {
+                    $('#myModal').modal();
+                    $('#ModalUpdate').modal('hide');
+                    GetAll();
+                }
+            });
+        };
+
+    </script>
+}

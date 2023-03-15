@@ -1,0 +1,66 @@
+﻿@model ML.Departamento
+
+@{
+    ViewBag.Title = "Form";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h2><i class="fa-solid fa-shop fa-bounce" style="color:royalblue"></i> Departamento</h2>
+            <p>Ingrese los datos del departamento a registrar</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            @using (Html.BeginForm("Form", "Departamento", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                <div class="form-horizontal">
+                    <div class="row">
+                        <div>
+                            @Html.LabelFor(model => model.IdDepartamento, new { @class = "visually-hidden" })
+                            @Html.TextBoxFor(model => model.IdDepartamento, new { @class = "visually-hidden" })
+                            @Html.ValidationMessageFor(model => model.IdDepartamento)
+                            @*hidden*@
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            @Html.LabelFor(model => model.Nombre)
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-quote-right"></i></span>
+                                @Html.TextBoxFor(model => model.Nombre, new { @class = "form-control", @id = "txtNombre" })
+                                @Html.ValidationMessageFor(model => model.Nombre)
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-3">
+                            @Html.LabelFor(model => model.Area)
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                @Html.DropDownListFor(model => model.Area.IdArea, new SelectList(Model.Area.Areas, "IdArea", "Nombre"),
+                            "Selecciona un Area", new { @class = "form-control" })
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <br />
+
+                    <div class="row">
+                        <hr />
+                        <div class="col-md-3">
+                            <input type="submit" value="Guardar" class="btn btn-success" />
+                            @Html.ActionLink("Regresar", "GetAll", "Departamento", htmlAttributes: new { @class = "btn btn-danger" })
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div><!--Container-->
