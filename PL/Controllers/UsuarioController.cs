@@ -17,17 +17,20 @@ namespace PL.Controllers
         public ActionResult GetAll()
         {
             ML.Usuario usuario = new ML.Usuario();
-            //ML.Result result = BL.Usuario.GetAll(usuario);
+                //Sin ServiciosWeb
+            /*ML.Result result = BL.Usuario.GetAll(usuario);
 
-            //if (result.Correct)
-            //{
-            //    usuario.Usuarios = result.Objects;
-            //    return View(usuario);
-            //}
-            //else
-            //{
-            //    return View(usuario);
-            //}
+            if (result.Correct)
+            {
+                usuario.Usuarios = result.Objects;
+                return View(usuario);
+            }
+            else
+            {
+                return View(usuario);
+            }*/
+
+                //Con ServiciosWeb
             ML.Result result = new ML.Result();
             result.Objects = new List<object>();
 
@@ -112,8 +115,34 @@ namespace PL.Controllers
             }//if
             else
             {
-                //GetById
-                ML.Result result = BL.Usuario.GetById(idUsuario.Value);
+                //GetById Sin ServiciosWeb
+                //ML.Result result = BL.Usuario.GetById(idUsuario.Value);
+
+                //GetById Con ServiciosWEb
+                ML.Result result = new ML.Result();
+                result.Object = new object();
+                using (var client = new HttpClient())
+                {
+                    string urlApi = _configuration["urlApi"];
+                    client.BaseAddress = new Uri(urlApi);
+
+                    var responseTask = client.GetAsync("Usuario/GetById?idUsuario=" + idUsuario);
+                    responseTask.Wait();
+
+                    var resultServicio = responseTask.Result;
+
+                    if (resultServicio.IsSuccessStatusCode)
+                    {
+                        var readTask = resultServicio.Content.ReadAsAsync<ML.Result>();
+                        readTask.Wait();
+                        var resultItem = readTask.Result.Object;
+                        
+                            ML.Usuario resultItemList = Newtonsoft.Json.JsonConvert.DeserializeObject<ML.Usuario>(resultItem.ToString());
+                            result.Object = resultItemList;
+                        
+                        result.Correct = true;
+                    }                    
+                }
 
                 if (result.Correct)
                 {
@@ -129,7 +158,7 @@ namespace PL.Controllers
                     usuario.Direccion.Colonia.Municipio.Estado.Estados = resultEstado.Objects;
                     usuario.Direccion.Colonia.Municipio.Estado.Pais.Paises = resultPais.Objects;
 
-                    //Update
+                    //Update                   
                     return View(usuario);
                 }//if
                 else
@@ -143,81 +172,141 @@ namespace PL.Controllers
         [HttpPost]
         public ActionResult Form(ML.Usuario usuario)
         {
-            ML.Result result = new ML.Result();
+            //Sin servicio Web
+            /* ML.Result result = new ML.Result();
+             IFormFile file = Request.Form.Files["fuImage"];
+
+             if (file != null)
+             {
+                 byte[] imagen = ImagenABase64(file);
+                 usuario.Imagen = Convert.ToBase64String(imagen);
+             }
+
+             //if (ModelState.IsValid == true)
+             //{
+             if (usuario.IdUsuario == 0)
+             {
+                 //Add
+
+                 result = BL.Usuario.Add(usuario);
+
+                 if (result.Correct)
+                 {
+                     ViewBag.Message = "Usuario registrado correctamente!";
+                 }//if
+                 else
+                 {
+                     ViewBag.Message = "Error al registrar al usuario...";
+                 }//else
+                 return View("Modal");
+             }//if
+             else
+             {
+                 //Update                
+                 result = BL.Usuario.Update(usuario);
+                 if (result.Correct)
+                 {
+                     ViewBag.Message = "Se actualizó el registro correctamente!";
+                 }//if
+                 else
+                 {
+                     ViewBag.Message = "Error al actualizar el registro...";
+                 }//else
+                 return View("Modal");
+             }//else
+              //}//ifModelState
+              //else
+              //{
+              //    ML.Result resultRol = BL.Rol.GetAll();
+              //    ML.Result resultPais = BL.Pais.GetAll();                
+
+             //    usuario.Rol = new ML.Rol();
+             //    usuario.Direccion = new ML.Direccion();
+             //    usuario.Direccion.Colonia = new ML.Colonia();
+             //    usuario.Direccion.Colonia.Municipio = new ML.Municipio();
+             //    usuario.Direccion.Colonia.Municipio.Estado = new ML.Estado();
+             //    usuario.Direccion.Colonia.Municipio.Estado.Pais = new ML.Pais();
+
+             //    usuario.Rol.Roles = resultRol.Objects;
+             //    usuario.Direccion.Colonia.Municipio.Estado.Pais.Paises = resultPais.Objects;
+
+             //    ML.Result resultEstado = BL.Estado.GetByIdPais(usuario.Direccion.Colonia.Municipio.Estado.Pais.IdPais);
+             //    ML.Result resultMunicipio = BL.Municipio.GetByIdEstado(usuario.Direccion.Colonia.Municipio.Estado.IdEstado);
+             //    ML.Result resultColonia = BL.Colonia.GetByIdMunicipio(usuario.Direccion.Colonia.Municipio.IdMunicipio);
+
+             //    usuario.Direccion.Colonia.Colonias = resultColonia.Objects;
+             //    usuario.Direccion.Colonia.Municipio.Municipios = resultMunicipio.Objects;
+             //    usuario.Direccion.Colonia.Municipio.Estado.Estados = resultEstado.Objects;
+             //    usuario.Direccion.Colonia.Municipio.Estado.Pais.Paises = resultPais.Objects;
+
+             //return View(usuario);
+             //}//elseModelState
+             */
+
+            //Con servicio Web
             IFormFile file = Request.Form.Files["fuImage"];
 
             if (file != null)
             {
                 byte[] imagen = ImagenABase64(file);
+
                 usuario.Imagen = Convert.ToBase64String(imagen);
             }
-
-            //if (ModelState.IsValid == true)
-            //{
+            //Add
             if (usuario.IdUsuario == 0)
             {
-                //Add
-
-                result = BL.Usuario.Add(usuario);
-
-                if (result.Correct)
+                using (var client = new HttpClient())
                 {
-                    ViewBag.Message = "Usuario registrado correctamente!";
-                }//if
-                else
-                {
-                    ViewBag.Message = "Error al registrar al usuario...";
-                }//else
-                return View("Modal");
+                    client.BaseAddress = new Uri(_configuration["urlApi"]);
+
+                    //HTTP POST
+                    var postTask = client.PostAsJsonAsync<ML.Usuario>("Usuario/Add", usuario);
+                    postTask.Wait();
+
+                    var result = postTask.Result;
+                    if (result.IsSuccessStatusCode)
+                    {
+                        ViewBag.Message = "Se ha actualizado el registro";                        
+                    }
+                    else
+                    {
+                        ViewBag.Message = "No se ha actualizado el usuario";                        
+                    }
+                    return PartialView("Modal");
+                }//using
             }//if
+
+            //Update
             else
             {
-                //Update                
-                result = BL.Usuario.Update(usuario);
-                if (result.Correct)
+                using (var client = new HttpClient())
                 {
-                    ViewBag.Message = "Se actualizó el registro correctamente!";
-                }//if
-                else
-                {
-                    ViewBag.Message = "Error al actualizar el registro...";
-                }//else
-                return View("Modal");
-            }//else
-             //}//ifModelState
-             //else
-             //{
-             //    ML.Result resultRol = BL.Rol.GetAll();
-             //    ML.Result resultPais = BL.Pais.GetAll();                
+                    client.BaseAddress = new Uri(_configuration["urlApi"]);
 
-            //    usuario.Rol = new ML.Rol();
-            //    usuario.Direccion = new ML.Direccion();
-            //    usuario.Direccion.Colonia = new ML.Colonia();
-            //    usuario.Direccion.Colonia.Municipio = new ML.Municipio();
-            //    usuario.Direccion.Colonia.Municipio.Estado = new ML.Estado();
-            //    usuario.Direccion.Colonia.Municipio.Estado.Pais = new ML.Pais();
+                    //HTTP POST
+                    var postTask = client.PostAsJsonAsync<ML.Usuario>("Usuario/Update", usuario);
+                    postTask.Wait();
 
-            //    usuario.Rol.Roles = resultRol.Objects;
-            //    usuario.Direccion.Colonia.Municipio.Estado.Pais.Paises = resultPais.Objects;
-
-            //    ML.Result resultEstado = BL.Estado.GetByIdPais(usuario.Direccion.Colonia.Municipio.Estado.Pais.IdPais);
-            //    ML.Result resultMunicipio = BL.Municipio.GetByIdEstado(usuario.Direccion.Colonia.Municipio.Estado.IdEstado);
-            //    ML.Result resultColonia = BL.Colonia.GetByIdMunicipio(usuario.Direccion.Colonia.Municipio.IdMunicipio);
-
-            //    usuario.Direccion.Colonia.Colonias = resultColonia.Objects;
-            //    usuario.Direccion.Colonia.Municipio.Municipios = resultMunicipio.Objects;
-            //    usuario.Direccion.Colonia.Municipio.Estado.Estados = resultEstado.Objects;
-            //    usuario.Direccion.Colonia.Municipio.Estado.Pais.Paises = resultPais.Objects;
-
-            //return View(usuario);
-            //}//elseModelState
-
+                    var result = postTask.Result;
+                    if (result.IsSuccessStatusCode)
+                    {
+                        ViewBag.Message = "Se ha registrado el usuario";
+                        return PartialView("Modal");
+                    }
+                    else
+                    {
+                        ViewBag.Message = "No se ha registrado el usuario";
+                        return PartialView("Modal");
+                    }
+                }
+            }
         }//Form
 
         [HttpGet]
         public ActionResult Delete(int idUsuario)
         {
-            ML.Result result = BL.Usuario.Delete(idUsuario);
+            //Sin Servicio Web
+            /*ML.Result result = BL.Usuario.Delete(idUsuario);
             if (result.Correct)
             {
                 ViewBag.Message = "Registro eliminado correctamente!";
@@ -226,7 +315,29 @@ namespace PL.Controllers
             {
                 ViewBag.Message = "Error al eliminar el registro...";
             }
-            return View("Modal");
+            return View("Modal");*/
+
+            //Con Servicio Web
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(_configuration["urlApi"]);                
+
+                //HTTP POST
+                var deleteTask = client.PostAsync("Usuario/Delete?idUsuario=" + idUsuario,null);
+                deleteTask.Wait();
+
+                var result = deleteTask.Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    ViewBag.Message = "Se ha eliminado a el usuario";
+                    return PartialView("Modal");
+                }
+                else
+                {
+                    ViewBag.Message = "No se ha eliminado a el usuario";
+                    return PartialView("Modal");
+                }
+            }
         }//Delete
 
         [HttpPost]

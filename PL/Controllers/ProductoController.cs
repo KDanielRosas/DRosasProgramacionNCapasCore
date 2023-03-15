@@ -18,21 +18,24 @@ namespace PL.Controllers
         public ActionResult GetAll()
         {
             ML.Producto producto = new ML.Producto();
-            //ML.Result result = BL.Producto.GetAll(producto);            
 
-            //if (result.Correct)
-            //{
-            //    producto.Productos = result.Objects;
-            //    return View(producto);
-            //}
-            //else
-            //{
-            //    return View(producto);
-            //}
+                //Sin ServicioWeb
+            /*ML.Result result = BL.Producto.GetAll(producto);
+
+            if (result.Correct)
+            {
+                producto.Productos = result.Objects;
+                return View(producto);
+            }
+            else
+            {
+                return View(producto);
+            }*/
 
             ML.Result result = new ML.Result();
             result.Objects = new List<object>();
 
+                //Con ServicioWeb
             try
             {
 
@@ -63,6 +66,8 @@ namespace PL.Controllers
             }
             catch (Exception ex)
             {
+                ViewBag.Message = "Error al mostrar los datos. " + ex.Message;
+                return PartialView("Modal");
             }
 
             return View(producto);
@@ -96,8 +101,34 @@ namespace PL.Controllers
             }//if
             else
             {
-                //GetById
-                ML.Result result = BL.Producto.GetById(idProducto.Value);
+                //GetById Sin ServiciosWeb
+                //ML.Result result = BL.Producto.GetById(idProducto.Value);
+
+                //GetById Con ServicioWeb
+                ML.Result result = new ML.Result();
+                result.Object = new object();
+                using (var client = new HttpClient())
+                {
+                    string urlApi = _configuration["urlApi"];
+                    client.BaseAddress = new Uri(urlApi);
+
+                    var responseTask = client.GetAsync("Producto/GetById?idProducto=" + idProducto);
+                    responseTask.Wait();
+
+                    var resultServicio = responseTask.Result;
+
+                    if (resultServicio.IsSuccessStatusCode)
+                    {
+                        var readTask = resultServicio.Content.ReadAsAsync<ML.Result>();
+                        readTask.Wait();
+                        var resultItem = readTask.Result.Object;
+
+                        ML.Producto resultItemList = Newtonsoft.Json.JsonConvert.DeserializeObject<ML.Producto>(resultItem.ToString());
+                        result.Object = resultItemList;
+
+                        result.Correct = true;
+                    }
+                }
 
                 if (result.Correct)
                 {
@@ -124,7 +155,8 @@ namespace PL.Controllers
         [HttpPost]
         public ActionResult Form(ML.Producto producto)
         {
-            ML.Result result = new ML.Result();
+            //Sin ServicioWeb
+            /*ML.Result result = new ML.Result();
             IFormFile file = Request.Form.Files["fuImage"];
 
             if (file != null)
@@ -161,13 +193,72 @@ namespace PL.Controllers
                     ViewBag.Message = "Error al actualizar el registo...";
                 }//else
                 return View("Modal");
+            }*/
+
+            //Con ServicioWeb
+            IFormFile file = Request.Form.Files["fuImage"];
+
+            if (file != null)
+            {
+                byte[] imagen = ImagenABase64(file);
+
+                producto.Imagen = Convert.ToBase64String(imagen);
+            }
+            //Add
+            if (producto.IdProducto == 0)
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri(_configuration["urlApi"]);
+
+                    //HTTP POST
+                    var postTask = client.PostAsJsonAsync("Producto/Add", producto);
+                    postTask.Wait();
+
+                    var result = postTask.Result;
+                    if (result.IsSuccessStatusCode)
+                    {
+                        ViewBag.Message = "Se ha ingresado el registro.";
+                    }
+                    else
+                    {
+                        ViewBag.Message = "No se ha ingresado el registro.";
+                    }
+                    return PartialView("Modal");
+                }//using
+            }//if
+
+            //Update
+            else
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri(_configuration["urlApi"]);
+
+                    //HTTP POST
+                    var postTask = client.PostAsJsonAsync("Producto/Update", producto);
+                    postTask.Wait();
+
+                    var result = postTask.Result;
+                    if (result.IsSuccessStatusCode)
+                    {
+                        ViewBag.Message = "Se ha actualizado el producto.";
+                        return PartialView("Modal");
+                    }
+                    else
+                    {
+                        ViewBag.Message = "No se ha actualizado el producto.";
+                        return PartialView("Modal");
+                    }
+                }
             }
         }//Form
 
         [HttpGet]
         public ActionResult Delete(int idProducto)
         {
-            ML.Result result = BL.Producto.Delete(idProducto);
+            //Sin ServicioWeb
+            /*ML.Result result = BL.Producto.Delete(idProducto);
             if (result.Correct)
             {
                 ViewBag.Message = "Registro eliminado correctamente!";
@@ -176,7 +267,30 @@ namespace PL.Controllers
             {
                 ViewBag.Message = "Error al eliminar el registro...";
             }
-            return View("Modal");
+            return View("Modal");*/
+
+            //Con ServicioWeb
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(_configuration["urlApi"]);
+
+                //HTTP POST
+                var deleteTask = client.PostAsync("Producto/Delete?idProducto=" + idProducto, null);
+                deleteTask.Wait();
+
+                var result = deleteTask.Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    ViewBag.Message = "Se ha eliminado el producto.";
+                    return PartialView("Modal");
+                }
+                else
+                {
+                    ViewBag.Message = "No se ha eliminado el producto.";
+                    return PartialView("Modal");
+                }
+            }
+
         }//Delete
 
         public JsonResult DepartamentoGetByIdArea(int idArea)
