@@ -8,11 +8,15 @@
 
 <div class="container">
     <div class="row">
-        <h2><i class="fa-solid fa-users fa-flip" style="--fa-animation-duration: 6s; color:royalblue;"></i> Usuarios</h2>
+        <div class="col">
+            <h2><i class="fa-solid fa-users fa-flip" style="--fa-animation-duration: 6s; color:royalblue;"></i> Usuarios</h2>
+        </div>
+        <div class="col" style="text-align:center; vertical-align:central">
+            @Html.ActionLink("Agregar", "Form", "Usuario", htmlAttributes: new { @class = "btn btn-success" })
+        </div>
         <p>Presione el boton de "Agregar" si desea registrar a un nuevo usuario</p>
-    </div>
-    <hr />
-                        
+        <hr />
+    </div>                      
     
     <div class="row">  
         <div class="col-md-12">
@@ -50,18 +54,19 @@
                             @Html.ValidationMessageFor(model => model.ApellidoMaterno, null, new { @class = "text-danger"})
                             @Html.Label(null, "", new { @id = "lblApMat"})
                         </div>
-        
-                        <div class="col-12 col-md-2" style="text-align:right">
-                            @Html.ActionLink("Agregar", "Form", "Usuario", htmlAttributes: new { @class = "btn btn-success" })
-                        </div> 
+
+                        <div class="col-md-3">
+                            <div class="input-group" >
+                               
+                                <input type="submit" value="Buscar" class="btn btn-info"/>
+                            </div>                            
+                        </div>
 
                     </div>                
 
                 </div> 
                 
-            <div class="row col-sm-2">                
-                <input type="submit" value="Buscar" class="btn btn-info"  />                                           
-            </div>
+            
             }
         </div>        
     </div>
